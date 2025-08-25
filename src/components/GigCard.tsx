@@ -29,8 +29,15 @@ const GigCard = ({
 }: GigCardProps) => {
   const [favorited, setFavorited] = useState(isFavorited);
 
+  const handleCardClick = () => {
+    window.location.href = `/gig/${id}`;
+  };
+
   return (
-    <Card className="group cursor-pointer hover:shadow-green transition-shadow duration-300 overflow-hidden">
+    <Card 
+      className="group cursor-pointer hover:shadow-green transition-shadow duration-300 overflow-hidden"
+      onClick={handleCardClick}
+    >
       <div className="relative">
         <img
           src={coverImage}
