@@ -64,11 +64,19 @@ const GigCard = ({
       <CardContent className="p-4">
         {/* Seller Info */}
         <div className="flex items-center space-x-2 mb-3">
-          <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+          <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center overflow-hidden">
             {sellerAvatar ? (
-              <img src={sellerAvatar} alt={sellerName} className="w-full h-full rounded-full object-cover" />
+              <img 
+                src={sellerAvatar} 
+                alt={sellerName} 
+                className="w-full h-full rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-primary rounded-full flex items-center justify-center"><svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>';
+                }}
+              />
             ) : (
-              <User className="h-3 w-3 text-white" />
+              <User className="h-3 w-3 text-primary" />
             )}
           </div>
           <span className="text-sm text-text-secondary">{sellerName}</span>
