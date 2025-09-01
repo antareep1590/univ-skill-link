@@ -86,6 +86,7 @@ const SignIn = () => {
             <Button
               variant="outline"
               className="w-full h-12 border-2 border-border hover:border-primary hover:bg-primary-light transition-smooth"
+              onClick={() => window.location.href = '/browse'}
             >
               <Facebook className="h-5 w-5 text-blue-600 mr-3" />
               Continue with Facebook
@@ -94,6 +95,7 @@ const SignIn = () => {
             <Button
               variant="outline"
               className="w-full h-12 border-2 border-border hover:border-primary hover:bg-primary-light transition-smooth"
+              onClick={() => window.location.href = '/browse'}
             >
               <Mail className="h-5 w-5 text-red-500 mr-3" />
               Continue with Google
@@ -101,7 +103,11 @@ const SignIn = () => {
           </div>
 
           {/* Sign In Button */}
-          <Button variant="primary" className="w-full h-12 text-lg shadow-green">
+          <Button 
+            variant="primary" 
+            className="w-full h-12 text-lg shadow-green"
+            onClick={() => window.location.href = '/browse'}
+          >
             Sign In
           </Button>
 
