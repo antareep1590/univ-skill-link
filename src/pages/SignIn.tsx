@@ -2,12 +2,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Facebook, Mail, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignIn = () => {
+    // No validation required as per requirements
+    navigate('/browse');
+  };
+
+  const handleSocialLogin = () => {
+    // No validation required as per requirements
+    navigate('/browse');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -86,6 +97,7 @@ const SignIn = () => {
             <Button
               variant="outline"
               className="w-full h-12 border-2 border-border hover:border-primary hover:bg-primary-light transition-smooth"
+              onClick={handleSocialLogin}
             >
               <Facebook className="h-5 w-5 text-blue-600 mr-3" />
               Continue with Facebook
@@ -94,6 +106,7 @@ const SignIn = () => {
             <Button
               variant="outline"
               className="w-full h-12 border-2 border-border hover:border-primary hover:bg-primary-light transition-smooth"
+              onClick={handleSocialLogin}
             >
               <Mail className="h-5 w-5 text-red-500 mr-3" />
               Continue with Google
@@ -101,7 +114,7 @@ const SignIn = () => {
           </div>
 
           {/* Sign In Button */}
-          <Button variant="primary" className="w-full h-12 text-lg shadow-green">
+          <Button variant="primary" className="w-full h-12 text-lg shadow-green" onClick={handleSignIn}>
             Sign In
           </Button>
 
