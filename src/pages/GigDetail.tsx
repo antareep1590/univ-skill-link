@@ -198,16 +198,20 @@ const GigDetail = () => {
                 {/* Style/Technique Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium text-sm text-text-secondary mb-2">CATEGORY</h4>
-                    <p className="text-sm">Digital Marketing</p>
+                    <h4 className="font-medium text-sm text-text-secondary mb-2">STYLE</h4>
+                    <p className="text-sm">For Children</p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm text-text-secondary mb-2">SUB CATEGORY</h4>
-                    <p className="text-sm">Social Media</p>
+                    <h4 className="font-medium text-sm text-text-secondary mb-2">ARTISTIC TECHNIQUE</h4>
+                    <p className="text-sm">Freehand Digital</p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm text-text-secondary mb-2">SERVICE TYPE</h4>
-                    <p className="text-sm">Social Content</p>
+                    <h4 className="font-medium text-sm text-text-secondary mb-2">THEME</h4>
+                    <p className="text-sm">Game, Fantasy</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-sm text-text-secondary mb-2">SUBJECT</h4>
+                    <p className="text-sm">Animal, Landscape</p>
                   </div>
                 </div>
               </CardContent>
