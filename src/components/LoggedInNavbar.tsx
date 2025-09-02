@@ -75,12 +75,14 @@ const LoggedInNavbar = () => {
             </DropdownMenu>
 
             {/* Messages */}
-            <Button variant="ghost" size="icon" className="relative">
-              <MessageCircle className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-primary">
-                2
-              </Badge>
-            </Button>
+            <Link to="/messages">
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageCircle className="h-5 w-5" />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-primary">
+                  2
+                </Badge>
+              </Button>
+            </Link>
 
             {/* Favorites */}
             <Button variant="ghost" size="icon">
@@ -88,9 +90,11 @@ const LoggedInNavbar = () => {
             </Button>
 
             {/* My Orders */}
-            <Button variant="ghost" size="icon">
-              <Package className="h-5 w-5" />
-            </Button>
+            <Link to="/orders">
+              <Button variant="ghost" size="icon">
+                <Package className="h-5 w-5" />
+              </Button>
+            </Link>
 
             {/* Profile Dropdown */}
             <DropdownMenu>
@@ -103,9 +107,11 @@ const LoggedInNavbar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Plus className="mr-2 h-4 w-4" />
@@ -115,9 +121,11 @@ const LoggedInNavbar = () => {
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  <span>Billing</span>
+                <DropdownMenuItem asChild>
+                  <Link to="/billing" className="flex items-center">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Billing</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <HelpCircle className="mr-2 h-4 w-4" />

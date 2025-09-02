@@ -8,6 +8,13 @@ import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import Browse from "./pages/Browse";
 import GigDetail from "./pages/GigDetail";
+import Checkout from "./pages/Checkout";
+import Payment from "./pages/Payment";
+import PaymentCompleted from "./pages/PaymentCompleted";
+import Messages from "./pages/Messages";
+import Profile from "./pages/Profile";
+import Billing from "./pages/Billing";
+import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +31,13 @@ const App = () => (
           <Route path="/signin" element={<SignIn />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/gig/:id" element={<GigDetail />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment-completed" element={<PaymentCompleted />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/orders" element={<Orders />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
