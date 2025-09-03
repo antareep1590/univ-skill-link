@@ -10,11 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit2, Save, X, Camera } from "lucide-react";
 import LoggedInNavbar from "@/components/LoggedInNavbar";
 import { useToast } from "@/hooks/use-toast";
+import { MultiSelect } from "@/components/MultiSelect";
 
 interface ProfileData {
   fullName: string;
   email: string;
   phone: string;
+  interestedTopics: string[];
 }
 
 interface BillingData {
@@ -35,8 +37,24 @@ const Profile = () => {
   const [profileData, setProfileData] = useState<ProfileData>({
     fullName: "John Doe",
     email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567"
+    phone: "+1 (555) 123-4567",
+    interestedTopics: ["web-development", "graphic-design"]
   });
+
+  const topicOptions = [
+    { value: "web-development", label: "Web Development" },
+    { value: "mobile-development", label: "Mobile Development" },
+    { value: "graphic-design", label: "Graphic Design" },
+    { value: "digital-marketing", label: "Digital Marketing" },
+    { value: "content-writing", label: "Content Writing" },
+    { value: "video-editing", label: "Video Editing" },
+    { value: "animation", label: "Animation" },
+    { value: "photography", label: "Photography" },
+    { value: "ui-ux-design", label: "UI/UX Design" },
+    { value: "data-analysis", label: "Data Analysis" },
+    { value: "social-media", label: "Social Media Management" },
+    { value: "seo", label: "SEO Optimization" },
+  ];
 
   const [billingData, setBillingData] = useState<BillingData>({
     fullName: "John Doe",
@@ -265,6 +283,17 @@ const Profile = () => {
                 {errors.phone && (
                   <p className="text-xs text-destructive">{errors.phone}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interestedTopics">Interested Topics/Categories</Label>
+                <MultiSelect
+                  options={topicOptions}
+                  value={profileData.interestedTopics}
+                  onChange={(value) => setProfileData(prev => ({ ...prev, interestedTopics: value }))}
+                  placeholder="Select your areas of interest..."
+                  disabled={!isEditingProfile}
+                />
               </div>
             </CardContent>
           </Card>

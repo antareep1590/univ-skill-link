@@ -28,6 +28,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Heart, Share2, Star, Check, User, MapPin, Clock } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const GigDetail = () => {
   const { id } = useParams();

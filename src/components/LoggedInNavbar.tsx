@@ -113,14 +113,6 @@ const LoggedInNavbar = () => {
                     <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Plus className="mr-2 h-4 w-4" />
-                  <span>New Job</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/billing" className="flex items-center">
                     <CreditCard className="mr-2 h-4 w-4" />
