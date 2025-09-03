@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
   Filter, 
@@ -17,7 +20,10 @@ import {
   Clock,
   CheckCircle,
   Package,
-  MessageCircle
+  MessageCircle,
+  Flag,
+  Star,
+  Upload
 } from "lucide-react";
 import LoggedInNavbar from "@/components/LoggedInNavbar";
 
@@ -32,6 +38,9 @@ interface Order {
   deliveryDate: string;
   packageName: string;
   description: string;
+  hasDispute?: boolean;
+  hasReview?: boolean;
+  rating?: number;
 }
 
 const Orders = () => {
@@ -39,9 +48,128 @@ const Orders = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [ordersData, setOrdersData] = useState<Order[]>([]);
+  const [disputeOrder, setDisputeOrder] = useState<Order | null>(null);
+  const [rateOrder, setRateOrder] = useState<Order | null>(null);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [disputeFiles, setDisputeFiles] = useState<File[]>([]);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [hoverRating, setHoverRating] = useState(0);
+  const { toast } = useToast();
+
+  // Initialize orders data
+  useEffect(() => {
+    setOrdersData(initialOrders);
+  }, []);
+
+  // Handler functions
+  const handleDisputeSubmit = () => {
+    if (!disputeReason) {
+      toast({
+        title: "Error",
+        description: "Please select a dispute reason.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (disputeDescription.length > 0 && (disputeDescription.length < 2 || disputeDescription.length > 1000)) {
+      toast({
+        title: "Error", 
+        description: "Description must be between 2-1000 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update order with dispute flag
+    setOrdersData(prev => prev.map(order => 
+      order.id === disputeOrder?.id ? { ...order, hasDispute: true } : order
+    ));
+
+    toast({
+      title: "Success",
+      description: "Dispute raised!",
+    });
+
+    // Reset form
+    setDisputeOrder(null);
+    setDisputeReason("");
+    setDisputeDescription("");
+    setDisputeFiles([]);
+  };
+
+  const handleRatingSubmit = () => {
+    if (rating === 0) {
+      toast({
+        title: "Error",
+        description: "Please select a star rating.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (reviewText.length > 500) {
+      toast({
+        title: "Error",
+        description: "Review must be 500 characters or less.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update order with review
+    setOrdersData(prev => prev.map(order => 
+      order.id === rateOrder?.id ? { ...order, hasReview: true, rating } : order
+    ));
+
+    toast({
+      title: "Success",
+      description: "Review added!",
+    });
+
+    // Reset form
+    setRateOrder(null);
+    setRating(0);
+    setReviewText("");
+    setHoverRating(0);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter(file => {
+      const isValidType = ['image/jpeg', 'image/png', 'application/pdf'].includes(file.type);
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      return isValidType && isValidSize;
+    });
+
+    if (validFiles.length !== files.length) {
+      toast({
+        title: "Error",
+        description: "Some files were rejected. Only JPG, PNG, PDF files under 5MB are allowed.",
+        variant: "destructive",
+      });
+    }
+
+    setDisputeFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setDisputeFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const canRaiseDispute = (order: Order) => {
+    return (order.status === 'delivered') && !order.hasDispute;
+  };
+
+  const canRateSeller = (order: Order) => {
+    return (order.status === 'delivered' || order.status === 'completed') && !order.hasReview;
+  };
 
   // Mock data
-  const orders: Order[] = [
+  const initialOrders: Order[] = [
     {
       id: "1",
       orderNumber: "ORD-2024-001",
@@ -104,7 +232,7 @@ const Orders = () => {
     }
   ];
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = ordersData.filter(order => {
     const matchesSearch = 
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.gigTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -345,10 +473,212 @@ const Orders = () => {
                               </DialogContent>
                             </Dialog>
                             
+                            {/* Raise Dispute Button */}
+                            {canRaiseDispute(order) && (
+                              <Dialog open={disputeOrder?.id === order.id} onOpenChange={(open) => !open && setDisputeOrder(null)}>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => setDisputeOrder(order)}
+                                    title="Raise Dispute"
+                                  >
+                                    <Flag className="h-4 w-4 text-red-600" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle>Raise Dispute</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="space-y-2">
+                                      <Label htmlFor="dispute-reason">Dispute Reason *</Label>
+                                      <Select value={disputeReason} onValueChange={setDisputeReason}>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select a reason" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="not-received">Did not receive deliverable</SelectItem>
+                                          <SelectItem value="quality-issue">Quality issue</SelectItem>
+                                          <SelectItem value="other">Other</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label htmlFor="dispute-description">Description (optional)</Label>
+                                      <Textarea
+                                        id="dispute-description"
+                                        placeholder="Describe the issue..."
+                                        value={disputeDescription}
+                                        onChange={(e) => setDisputeDescription(e.target.value)}
+                                        maxLength={1000}
+                                      />
+                                      <div className="text-sm text-text-secondary text-right">
+                                        {disputeDescription.length}/1000 characters
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label>File Upload (optional)</Label>
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                          <input
+                                            type="file"
+                                            multiple
+                                            accept=".jpg,.jpeg,.png,.pdf"
+                                            onChange={handleFileUpload}
+                                            className="hidden"
+                                            id="dispute-files"
+                                          />
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => document.getElementById('dispute-files')?.click()}
+                                          >
+                                            <Upload className="h-4 w-4 mr-2" />
+                                            Choose Files
+                                          </Button>
+                                          <span className="text-sm text-text-secondary">
+                                            JPG, PNG, PDF (max 5MB each)
+                                          </span>
+                                        </div>
+                                        {disputeFiles.length > 0 && (
+                                          <div className="space-y-1">
+                                            {disputeFiles.map((file, index) => (
+                                              <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                                                <span className="text-sm truncate">{file.name}</span>
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => removeFile(index)}
+                                                >
+                                                  ×
+                                                </Button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-2 pt-4">
+                                      <Button 
+                                        onClick={handleDisputeSubmit}
+                                        className="flex-1"
+                                      >
+                                        Submit Dispute
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        onClick={() => setDisputeOrder(null)}
+                                        className="flex-1"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+
+                            {/* Rate Seller Button */}
+                            {canRateSeller(order) && (
+                              <Dialog open={rateOrder?.id === order.id} onOpenChange={(open) => !open && setRateOrder(null)}>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => setRateOrder(order)}
+                                    title="Rate Seller"
+                                  >
+                                    <Star className="h-4 w-4 text-yellow-600" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle>Add a Review</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="space-y-2">
+                                      <Label>Star Rating *</Label>
+                                      <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <button
+                                            key={star}
+                                            type="button"
+                                            className="p-1"
+                                            onMouseEnter={() => setHoverRating(star)}
+                                            onMouseLeave={() => setHoverRating(0)}
+                                            onClick={() => setRating(star)}
+                                          >
+                                            <Star 
+                                              className={`h-6 w-6 ${
+                                                star <= (hoverRating || rating)
+                                                  ? 'fill-yellow-400 text-yellow-400' 
+                                                  : 'text-gray-300'
+                                              }`}
+                                            />
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label htmlFor="review-text">Feedback (optional)</Label>
+                                      <Textarea
+                                        id="review-text"
+                                        placeholder="Share your experience with this seller (optional)"
+                                        value={reviewText}
+                                        onChange={(e) => setReviewText(e.target.value)}
+                                        maxLength={500}
+                                      />
+                                      <div className="text-sm text-text-secondary text-right">
+                                        {reviewText.length}/500 characters
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-2 pt-4">
+                                      <Button 
+                                        onClick={handleRatingSubmit}
+                                        className="flex-1"
+                                        disabled={rating === 0}
+                                      >
+                                        Submit Review
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        onClick={() => setRateOrder(null)}
+                                        className="flex-1"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+
+                            {/* Download Button */}
                             {(order.status === 'completed' || order.status === 'delivered') && (
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="sm" title="Download Files">
                                 <Download className="h-4 w-4" />
                               </Button>
+                            )}
+
+                            {/* Show dispute/review status */}
+                            {order.hasDispute && (
+                              <Badge variant="destructive" className="text-xs">
+                                Dispute Active
+                              </Badge>
+                            )}
+                            {order.hasReview && (
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                <span className="text-xs text-text-secondary">{order.rating}</span>
+                              </div>
                             )}
                           </div>
                         </TableCell>
