@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import LoggedInNavbar from "@/components/LoggedInNavbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +30,14 @@ import {
 import { Heart, Share2, Star, Check, User, MapPin, Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const GigDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, string>>({});
 
   // Mock data - in real app this would come from API
   const gigData = {
@@ -87,6 +91,28 @@ const GigDetail = () => {
       "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300&h=200&fit=crop",
     ],
     tags: ["Cute", "Draw", "Books"],
+    questionnaire: [
+      {
+        id: 1,
+        question: "What style of illustration do you prefer?",
+        type: "radio",
+        options: ["Cartoon", "Realistic", "Minimalist", "Watercolor"],
+        required: true
+      },
+      {
+        id: 2,
+        question: "Please describe your book's main character",
+        type: "textarea",
+        required: true
+      },
+      {
+        id: 3,
+        question: "What age group is your book for?",
+        type: "select",
+        options: ["0-3 years", "4-7 years", "8-12 years", "Teen"],
+        required: true
+      }
+    ],
     reviews: [
       {
         id: 1,
@@ -98,7 +124,38 @@ const GigDetail = () => {
         timeAgo: "1 day ago",
         comment: "Absolutely fantastic work! The illustration exceeded my expectations and was delivered on time.",
       },
+      {
+        id: 2,
+        buyer: {
+          name: "Sarah M",
+          avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b950?w=50&h=50&fit=crop",
+        },
+        rating: 4,
+        timeAgo: "3 days ago",
+        comment: "Great communication and beautiful artwork. Will definitely work with this seller again.",
+      },
+      {
+        id: 3,
+        buyer: {
+          name: "Mike R",
+          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop",
+        },
+        rating: 5,
+        timeAgo: "1 week ago",
+        comment: "Perfect cover design that captured exactly what I envisioned for my children's book.",
+      },
     ],
+  };
+
+  const handleQuestionnaireChange = (questionId: string, value: string) => {
+    setQuestionnaireAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  const handleHireNow = () => {
+    navigate('/checkout');
   };
 
   return (
@@ -268,6 +325,64 @@ const GigDetail = () => {
               </CardContent>
             </Card>
 
+            {/* Questionnaire */}
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-6">Questionnaire</h2>
+                <p className="text-text-secondary mb-6">Please answer these questions to help the seller understand your requirements better.</p>
+                
+                <div className="space-y-6">
+                  {gigData.questionnaire.map((question, index) => (
+                    <div key={question.id} className="space-y-3">
+                      <Label className="text-base font-medium">
+                        {index + 1}. {question.question}
+                        {question.required && <span className="text-destructive ml-1">*</span>}
+                      </Label>
+                      
+                      {question.type === "textarea" && (
+                        <Textarea
+                          placeholder="Enter your answer..."
+                          value={questionnaireAnswers[question.id.toString()] || ""}
+                          onChange={(e) => handleQuestionnaireChange(question.id.toString(), e.target.value)}
+                          className="min-h-[80px]"
+                        />
+                      )}
+                      
+                      {question.type === "radio" && question.options && (
+                        <RadioGroup
+                          value={questionnaireAnswers[question.id.toString()] || ""}
+                          onValueChange={(value) => handleQuestionnaireChange(question.id.toString(), value)}
+                        >
+                          {question.options.map((option) => (
+                            <div key={option} className="flex items-center space-x-2">
+                              <RadioGroupItem value={option} id={`${question.id}-${option}`} />
+                              <Label htmlFor={`${question.id}-${option}`}>{option}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      )}
+                      
+                      {question.type === "select" && question.options && (
+                        <Select
+                          value={questionnaireAnswers[question.id.toString()] || ""}
+                          onValueChange={(value) => handleQuestionnaireChange(question.id.toString(), value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an option..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {question.options.map((option) => (
+                              <SelectItem key={option} value={option}>{option}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Reviews */}
             <Card>
               <CardContent className="p-6">
@@ -291,7 +406,7 @@ const GigDetail = () => {
                 </div>
 
                 <div className="space-y-6">
-                  {gigData.reviews.map((review) => (
+                  {gigData.reviews.slice(0, 3).map((review) => (
                     <div key={review.id} className="flex space-x-4">
                       <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                         {review.buyer.avatar ? (
@@ -318,10 +433,24 @@ const GigDetail = () => {
                           </div>
                           <span className="text-sm text-text-secondary">{review.timeAgo}</span>
                         </div>
-                        <p className="text-text-secondary">{review.comment}</p>
+                        <p className="text-text-secondary">
+                          {review.comment.length > 150 
+                            ? `${review.comment.substring(0, 150)}...` 
+                            : review.comment
+                          }
+                        </p>
                       </div>
                     </div>
                   ))}
+                </div>
+                
+                <div className="mt-6 text-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/reviews/${gigData.id}`)}
+                  >
+                    See All Reviews ({gigData.reviewCount.toLocaleString()})
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -343,11 +472,23 @@ const GigDetail = () => {
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            {/* Contact Seller Card */}
+            {/* Hire Now Card */}
             <Card>
               <CardContent className="p-6">
-                <Button className="w-full mb-4" size="lg">
-                  Contact Seller
+                <Button 
+                  className="w-full mb-4" 
+                  size="lg"
+                  onClick={handleHireNow}
+                >
+                  Hire Now
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full mb-4" 
+                  size="lg"
+                >
+                  Contact Student
                 </Button>
                 
                 {/* Seller Info */}
@@ -391,10 +532,6 @@ const GigDetail = () => {
                       {gigData.seller.bio}
                     </p>
                   </div>
-
-                  <Button variant="outline" className="w-full">
-                    Contact Me
-                  </Button>
                 </div>
               </CardContent>
             </Card>
